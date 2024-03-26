@@ -35,7 +35,7 @@ int main (){
     switch(game){
     case 'y':
         if(game=='y'){
-    cout<<"You have started the game\n Please enter you name:\n";
+    cout<<"You have started the game\n Please enter your name:\n";
     cin>>name;
     cout<<"Welcome "<<name<<endl;
     }
@@ -53,7 +53,7 @@ int main (){
     cout<<"              |-----------|             "<<endl;
     cout<<"              |-----------|              "<<endl;
     cout<<"              |           |              "<<endl;
-    cout<<"              |-----------|             "<<endl;*/
+    cout<<"              |-----------|             "<<endl;
     cout<<"You have to move down to enter the cave\n";
     cout<<"Press d to move down\n";
     cin>>d;
