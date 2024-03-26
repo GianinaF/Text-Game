@@ -76,7 +76,7 @@ int main (){
      cout<<"\nYou are at the entrance of the cave where the monsters are waiting \n To open the door press o\n to run away press r \n";
      cin>>o;
      case 'o': if(o=='o'){
-         cout<<"You open The door\n";
+         cout<<"You opened The door\n";
          cout<<"You are a brave thief \n"<<name;
          }
     else if(o=='r'){
