@@ -1,0 +1,177 @@
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+#include <cmath>
+
+using namespace std;
+
+const int EASY_SIZE = 5;
+const int MEDIUM_SIZE = 10;
+const int HARD_SIZE = 15;
+
+void initializeGrid(char** grid, int size) {
+    for(int i = 0; i < size; i++) {
+        for(int j = 0; j < size; j++) {
+            grid[i][j] = '-';
+        }
+    }
+}
+
+void placeHiddenObjects(char** grid, int size, int numObjects) {
+    for(int i = 0; i < numObjects; i++) {
+        int x, y;
+        do {
+            x = rand() % size;
+            y = rand() % size;
+        } while (grid[x][y] != '-'); // Βεβαιωνόμαστε ότι το κελί είναι κενό
+
+        int objectType = rand() % 3;
+        switch(objectType) {
+            case 0:
+                grid[x][y] = 'M'; // Χάρτης
+                break;
+            case 1:
+                grid[x][y] = 'C'; // Πυξίδα
+                break;
+            case 2:
+                grid[x][y] = '+'; // Πρόσθετες προσπάθειες
+                break;
+        }
+    }
+}
+
+void printGrid(char** grid, int size) {
+    for(int i = 0; i < size; i++) {
+        for(int j = 0; j < size; j++) {
+            if (grid[i][j] == 'M' || grid[i][j] == 'C' || grid[i][j] == '+') {
+                cout << "- ";
+            } else {
+                cout << grid[i][j] << ' ';
+            }
+        }
+        cout << endl;
+    }
+}
+
+double calculateDistance(int x1, int y1, int x2, int y2) {
+    return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
+}
+
+int main() {
+    srand(time(0));
+
+    int gridSize;
+    cout << "Επιλέξτε επίπεδο δυσκολίας (1 = εύκολο, 2 = μεσαίο, 3 = δύσκολο): ";
+    int difficulty;
+    cin >> difficulty;
+
+    switch(difficulty) {
+        case 1:
+            gridSize = EASY_SIZE;
+            break;
+        case 2:
+            gridSize = MEDIUM_SIZE;
+            break;
+        case 3:
+            gridSize = HARD_SIZE;
+            break;
+        default:
+            cout << "Μη έγκυρη επιλογή, ορισμός επιπέδου σε εύκολο." << endl;
+            gridSize = EASY_SIZE;
+    }
+
+    char** grid = new char*[gridSize];
+    for(int i = 0; i < gridSize; ++i)
+        grid[i] = new char[gridSize];
+
+    initializeGrid(grid, gridSize);
+
+    int treasureX = rand() % gridSize;
+    int treasureY = rand() % gridSize;
+
+    int exitX, exitY;
+    do {
+        exitX = rand() % gridSize;
+        exitY = rand() % gridSize;
+    } while (exitX == treasureX && exitY == treasureY); // Βεβαιωνόμαστε ότι η έξοδος δεν είναι στην ίδια θέση με τον θησαυρό
+
+    placeHiddenObjects(grid, gridSize, gridSize / 2); // Τοποθετούμε κρυμμένα αντικείμενα
+
+    int attempts = 0;
+    const int maxAttempts = gridSize * 2;
+    bool foundTreasure = false;
+    bool foundExit = false;
+
+    cout << "Καλώς ήρθατε στο παιχνίδι του χαμένου θησαυρού!" << endl;
+    cout << "Ο θησαυρός και η έξοδος είναι κρυμμένοι σε έναν πίνακα " << gridSize << "x" << gridSize << ". Βρείτε τους!" << endl;
+
+    while (!foundExit && attempts < maxAttempts) {
+        int x, y;
+        cout << "Δώστε τις συντεταγμένες x και y (0-" << gridSize-1 << "): ";
+        cin >> x >> y;
+
+        if (x < 0 || x >= gridSize || y < 0 || y >= gridSize) {
+            cout << "Μη έγκυρες συντεταγμένες. Προσπαθήστε ξανά." << endl;
+            continue;
+        }
+
+        attempts++;
+
+        if (!foundTreasure) {
+            if (x == treasureX && y == treasureY) {
+                grid[x][y] = 'T';
+                foundTreasure = true;
+                cout << "Συγχαρητήρια! Βρήκατε τον θησαυρό σε " << attempts << " προσπάθειες!" << endl;
+                cout << "Τώρα βρείτε την έξοδο." << endl;
+            } else if (grid[x][y] == 'M') {
+                cout << "Βρήκατε έναν χάρτη! Ο θησαυρός βρίσκεται στις (" << treasureX << ", " << treasureY << ")." << endl;
+                grid[x][y] = '-';
+            } else if (grid[x][y] == 'C') {
+                double distance = calculateDistance(x, y, treasureX, treasureY);
+                cout << "Βρήκατε μια πυξίδα! Η απόσταση από τον θησαυρό είναι " << distance << "." << endl;
+                grid[x][y] = '-';
+            } else if (grid[x][y] == '+') {
+                cout << "Βρήκατε ένα αντικείμενο που σας δίνει 3 επιπλέον προσπάθειες!" << endl;
+                attempts -= 3;
+                grid[x][y] = '-';
+            } else {
+                grid[x][y] = 'X';
+                double distance = calculateDistance(x, y, treasureX, treasureY);
+                cout << "Δεν βρήκατε τον θησαυρό. Προσπαθήστε ξανά. Απόσταση από τον θησαυρό: " << distance << endl;
+            }
+        } else {
+            if (x == exitX && y == exitY) {
+                grid[x][y] = 'E';
+                foundExit = true;
+                cout << "Συγχαρητήρια! Βρήκατε την έξοδο σε " << attempts << " προσπάθειες!" << endl;
+            } else if (grid[x][y] == 'M') {
+                cout << "Βρήκατε έναν χάρτη! Η έξοδος βρίσκεται στις (" << exitX << ", " << exitY << ")." << endl;
+                grid[x][y] = '-';
+            } else if (grid[x][y] == 'C') {
+                double distance = calculateDistance(x, y, exitX, exitY);
+                cout << "Βρήκατε μια πυξίδα! Η απόσταση από την έξοδο είναι " << distance << "." << endl;
+                grid[x][y] = '-';
+            } else if (grid[x][y] == '+') {
+                cout << "Βρήκατε ένα αντικείμενο που σας δίνει 3 επιπλέον προσπάθειες!" << endl;
+                attempts -= 3;
+                grid[x][y] = '-';
+            } else {
+                grid[x][y] = 'O';
+                double distance = calculateDistance(x, y, exitX, exitY);
+                cout << "Δεν βρήκατε την έξοδο. Προσπαθήστε ξανά. Απόσταση από την έξοδο: " << distance << endl;
+            }
+        }
+
+        printGrid(grid, gridSize);
+    }
+
+    if (attempts >= maxAttempts) {
+        cout << "Δυστυχώς, εξαντλήσατε τις προσπάθειές σας. Το παιχνίδι τελείωσε." << endl;
+    }
+
+    for(int i = 0; i < gridSize; ++i)
+        delete[] grid[i];
+    delete[] grid;
+
+    return 0;
+}
